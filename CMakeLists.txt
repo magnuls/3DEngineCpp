@@ -19,7 +19,7 @@
 # Huge thanks to mxaddict for setting up the CMake build system!
 
 # we need features that are 2.6 >= dependent
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 3.5)
 
 # lets name the project
 project(3DEngineCpp)
