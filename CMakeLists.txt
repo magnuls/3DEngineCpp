@@ -24,11 +24,16 @@ cmake_minimum_required(VERSION 3.5)
 # lets name the project
 project(3DEngineCpp)
 
-# add the -c and -Wall flags
-add_definitions(
-	-c
-	-Wall
-)
+# export compile_commands.json for clangd/editor tooling (git-ignored, local only)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+#could not find glew
+list(APPEND CMAKE_PREFIX_PATH /opt/homebrew/)
+# use c++ 20
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# compiler flags
+add_compile_options(-Wall -Wextra -Werror)
 
 if ( CMAKE_BUILD_TYPE STREQUAL "" )
 	# CMake defaults to leaving CMAKE_BUILD_TYPE empty. This screws up
