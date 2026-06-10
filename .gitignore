@@ -208,3 +208,14 @@ pip-log.txt
 
 #Mr Developer
 .mr.developer.cfg
+
+#############
+## CMake / clangd
+#############
+
+# Out-of-source build directory
+/build/
+
+# clangd compilation database (machine-specific absolute paths)
+compile_commands.json
+.cache/
