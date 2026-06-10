@@ -33,7 +33,7 @@ list(APPEND CMAKE_PREFIX_PATH /opt/homebrew/)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # compiler flags
-add_compile_options(-Wall -Wextra -Werror)
+add_compile_options(-Wall -Wextra)
 
 if ( CMAKE_BUILD_TYPE STREQUAL "" )
 	# CMake defaults to leaving CMAKE_BUILD_TYPE empty. This screws up

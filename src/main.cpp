@@ -179,7 +179,7 @@ int main() {
     Testing::RunAllTests();
 
     TestGame game;
-    Window window(800, 600, "3D Game Engine");
+    Window window(1200, 1000, "3D Game Engine");
     RenderingEngine renderer(window);
 
     // window.SetFullScreen(true);
