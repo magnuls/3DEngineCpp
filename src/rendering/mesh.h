@@ -134,7 +134,7 @@ class Mesh {
     std::string m_fileName;
     MeshData* m_meshData;
 
-    void operator=(Mesh& mesh) {}
+    void operator=(Mesh& mesh) = delete;
 };
 
 // class MeshBuilder

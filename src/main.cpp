@@ -30,8 +30,8 @@ class TestGame : public Game {
 
    protected:
    private:
-    TestGame(const TestGame& other) {}
-    void operator=(const TestGame& other) {}
+    TestGame(const TestGame& other) = delete;
+    void operator=(const TestGame& other) = delete;
 };
 
 void TestGame::Init(const Window& window) {
