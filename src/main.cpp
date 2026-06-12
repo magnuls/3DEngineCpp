@@ -17,9 +17,7 @@
 #include "3DEngine.h"
 #include "components/freeLook.h"
 #include "components/freeMove.h"
-#include "components/physicsEngineComponent.h"
-#include "components/physicsObjectComponent.h"
-#include "physics/boundingSphere.h"
+#include "physics2/boundingSphere.h"
 #include "testing.h"
 
 class TestGame : public Game {
@@ -176,16 +174,35 @@ void TestGame::Init(const Window& window) {
 #include <iostream>
 
 int main() {
-    Testing::RunAllTests();
+    BoundingSphere sphere1(Vector3f(0, 0, 0), 1);  // red
+    BoundingSphere sphere2(Vector3f(1, 1, 1), 1);  // blue
+    BoundingSphere sphere3(Vector3f(4, 3, 2), 1);  // purple
+    BoundingSphere sphere4(Vector3f(0, 0, 2), 1);  // white
 
-    TestGame game;
-    Window window(1200, 1000, "3D Game Engine");
-    RenderingEngine renderer(window);
+    IntersectData s1_s2{sphere1.intersectBoundingSphere(sphere2)};
+    IntersectData s2_s1{sphere2.intersectBoundingSphere(sphere1)};
+    IntersectData s3_s4{sphere3.intersectBoundingSphere(sphere4)};
+    IntersectData s4_s1{sphere1.intersectBoundingSphere(sphere4)};
 
-    // window.SetFullScreen(true);
+    std::cout << "Intersection 1 and 2: " << s1_s2.getDoesIntersect() << '\n';
+    std::cout << "Intersection 2 and 1: " << s2_s1.getDoesIntersect() << '\n';
+    std::cout << "Intersection 3 and 4: " << s3_s4.getDoesIntersect() << '\n';
+    std::cout << "Intersection 4 and 1: " << s4_s1.getDoesIntersect() << '\n';
 
-    CoreEngine engine(60, &window, &renderer, &game);
-    engine.Start();
+    std::cout << "Distance 1 and 2: " << s1_s2.getDistance() << '\n';
+    std::cout << "Distance 2 and 1: " << s2_s1.getDistance() << '\n';
+    std::cout << "Distance 3 and 4: " << s3_s4.getDistance() << '\n';
+    std::cout << "Distance 4 and 1: " << s4_s1.getDistance() << '\n';
+    // Testing::RunAllTests();
+    //
+    // TestGame game;
+    // Window window(1200, 1000, "3D Game Engine");
+    // RenderingEngine renderer(window);
+    //
+    // // window.SetFullScreen(true);
+    //
+    // CoreEngine engine(60, &window, &renderer, &game);
+    // engine.Start();
 
     // window.SetFullScreen(false);
 
