@@ -33,7 +33,7 @@ INCLUDE(${3DEngineCpp_CMAKE_DIR}/FindASSIMP.cmake)
 
 
 # showing the headers to the compiler
-target_include_directories(engine PRIVATE
+target_include_directories(engine PUBLIC
     ${3DEngineCpp_SOURCE_DIR}/src    # your own headers
     ${OPENGL_INCLUDE_DIRS}           # where GL/gl.h lives
     ${GLEW_INCLUDE_DIRS}             # where GL/glew.h lives
