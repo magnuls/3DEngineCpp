@@ -16,6 +16,4 @@ class BoundingSphere {
     // member functions
     const Vector3f& getCenter() const;
     float getRadius() const;
-    // checks intersections
-    IntersectData intersectBoundingSphere(const BoundingSphere& sphere) const;
 };

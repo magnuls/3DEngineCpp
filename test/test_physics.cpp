@@ -1,7 +1,10 @@
 #include <gtest/gtest.h>
 
 #include "../src/physics2/boundingSphere.h"
+#include "../src/physics2/collisionDispatch.h"
 #include "../src/physics2/intersectData.h"
+
+using namespace Physics;
 
 TEST(PhysicsTest, BoundingSphere) {
     BoundingSphere sphere1(Vector3f(0, 0, 0), 1);  // red
@@ -10,10 +13,10 @@ TEST(PhysicsTest, BoundingSphere) {
     BoundingSphere sphere4(Vector3f(0, 0, 2), 1);  // white
                                                    //
                                                    //
-    IntersectData s1_s2{sphere1.intersectBoundingSphere(sphere2)};
-    IntersectData s2_s1{sphere2.intersectBoundingSphere(sphere1)};
-    IntersectData s3_s4{sphere3.intersectBoundingSphere(sphere4)};
-    IntersectData s4_s1{sphere1.intersectBoundingSphere(sphere4)};
+    IntersectData s1_s2{collision(sphere1, sphere2)};
+    IntersectData s2_s1{collision(sphere2, sphere1)};
+    IntersectData s3_s4{collision(sphere3, sphere4)};
+    IntersectData s4_s1{collision(sphere4, sphere1)};
 
     EXPECT_TRUE(s1_s2.m_doesIntersect);
     EXPECT_TRUE(s2_s1.m_doesIntersect);
