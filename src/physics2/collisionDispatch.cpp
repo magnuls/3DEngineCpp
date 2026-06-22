@@ -1,5 +1,8 @@
 #include "collisionDispatch.h"
 
+#include <ranges>
+
+#include "AABB.h"
 #include "boundingSphere.h"
 #include "intersectData.h"
 
@@ -17,4 +20,17 @@ IntersectData Physics::collision<BoundingSphere, BoundingSphere>(
     } else {
         return IntersectData(false, dV - radius_distance);
     }
+}
+
+// Overlap iff they overlap on every axis, x,y,z:
+template <>
+IntersectData Physics::collision<AABB, AABB>(const AABB& A, const AABB& B) {
+    Vector3f d1{B.getMin() - A.getMax()};
+    Vector3f d2{A.getMin() - B.getMax()};
+    Vector3f max{d1.Max(d2)};
+    if (std::ranges::all_of(max.cbegin(), max.cend(),
+                            [&](const float& numb) { return numb <= 0; })) {
+        return IntersectData(true, max.Length());
+    }
+    return IntersectData(false, max.Length());
 }
