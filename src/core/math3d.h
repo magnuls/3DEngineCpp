@@ -154,12 +154,12 @@ class Vector {
     int* begin() { return values; }
     int* end() { return values + D; }
 
-    const int* begin() const { return values; }
-    const int* end() const { return values + D; }
+    const T* begin() const { return values; }
+    const T* end() const { return values + D; }
 
     // Added const iterator for non const objects
-    const int* cbegin() const { return values; }
-    const int* cend() const { return values + D; }
+    const T* cbegin() const { return values; }
+    const T* cend() const { return values + D; }
 
    protected:
    private:
