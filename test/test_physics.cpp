@@ -193,6 +193,161 @@ TEST(PhysicsTest, Plane_Collision_Tests) {
     EXPECT_FALSE(r11.m_doesIntersect);
     EXPECT_NEAR(r11.distance, 10.39, 0.01f);
 }
+
+TEST(PhysicsTest, Plane_vs_BoundingSphere) {
+    // 1. Sphere well above axis-aligned floor — miss
+    Plane floor(Vector3f(0, 1, 0), 0);
+    BoundingSphere s_above(Vector3f(0, 5, 0), 1.0);
+    IntersectData r1{collision(floor, s_above)};
+    EXPECT_FALSE(r1.m_doesIntersect);
+    EXPECT_NEAR(r1.distance, 5.0, 0.01f);
+
+    // 2. Sphere partially through floor — hit
+    BoundingSphere s_partial(Vector3f(0, 0.5, 0), 1.0);
+    IntersectData r2{collision(floor, s_partial)};
+    EXPECT_TRUE(r2.m_doesIntersect);
+    EXPECT_NEAR(r2.distance, 0.5, 0.01f);
+
+    // 3. Sphere tangent to floor — hit
+    BoundingSphere s_tangent(Vector3f(0, 1, 0), 1.0);
+    IntersectData r3{collision(floor, s_tangent)};
+    EXPECT_TRUE(r3.m_doesIntersect);
+    EXPECT_NEAR(r3.distance, 1.0, 0.01f);
+
+    // 4. Near miss — just above
+    BoundingSphere s_near(Vector3f(0, 1.5, 0), 1.0);
+    IntersectData r4{collision(floor, s_near)};
+    EXPECT_FALSE(r4.m_doesIntersect);
+    EXPECT_NEAR(r4.distance, 1.5, 0.01f);
+
+    // 5. Center on plane — hit, distance 0
+    BoundingSphere s_on(Vector3f(3, 0, 3), 2.0);
+    IntersectData r5{collision(floor, s_on)};
+    EXPECT_TRUE(r5.m_doesIntersect);
+    EXPECT_NEAR(r5.distance, 0.0, 0.01f);
+
+    // 6. Sphere below plane — miss
+    BoundingSphere s_below(Vector3f(0, -3, 0), 1.0);
+    IntersectData r6{collision(floor, s_below)};
+    EXPECT_FALSE(r6.m_doesIntersect);
+    EXPECT_NEAR(r6.distance, 3.0, 0.01f);
+
+    // 7. Sphere from negative side — hit
+    BoundingSphere s_neg_hit(Vector3f(0, -0.5, 0), 1.0);
+    IntersectData r7{collision(floor, s_neg_hit)};
+    EXPECT_TRUE(r7.m_doesIntersect);
+    EXPECT_NEAR(r7.distance, 0.5, 0.01f);
+
+    // 8. Elevated plane, sphere below it — miss
+    Plane elevated(Vector3f(0, 1, 0), 10);
+    BoundingSphere s_low(Vector3f(0, 8, 0), 1.0);
+    IntersectData r8{collision(elevated, s_low)};
+    EXPECT_FALSE(r8.m_doesIntersect);
+    EXPECT_NEAR(r8.distance, 2.0, 0.01f);
+
+    // 9. Non-unit normal — tests normalization
+    Plane scaled(Vector3f(0, 5, 0), 0);
+    IntersectData r9{collision(scaled, s_tangent)};
+    EXPECT_TRUE(r9.m_doesIntersect);
+    EXPECT_NEAR(r9.distance, 1.0, 0.01f);
+
+    // 10. Both orderings
+    IntersectData r10{collision(s_above, floor)};
+    EXPECT_FALSE(r10.m_doesIntersect);
+    EXPECT_NEAR(r10.distance, 5.0, 0.01f);
+
+    IntersectData r11{collision(s_partial, floor)};
+    EXPECT_TRUE(r11.m_doesIntersect);
+    EXPECT_NEAR(r11.distance, 0.5, 0.01f);
+}
+
+TEST(PhysicsTest, Plane_vs_Plane) {
+    // 1. Two parallel planes, same normal — distance 5
+    Plane p1(Vector3f(0, 1, 0), 0);
+    Plane p2(Vector3f(0, 1, 0), 5);
+    IntersectData r1{collision(p1, p2)};
+    EXPECT_FALSE(r1.m_doesIntersect);
+    EXPECT_NEAR(r1.distance, 5.0, 0.01f);
+
+    // 2. Same plane — distance 0
+    Plane p3(Vector3f(0, 1, 0), 3);
+    Plane p4(Vector3f(0, 1, 0), 3);
+    IntersectData r2{collision(p3, p4)};
+    EXPECT_FALSE(r2.m_doesIntersect);
+    EXPECT_NEAR(r2.distance, 0.0, 0.01f);
+
+    // 3. Perpendicular planes — intersect
+    Plane p5(Vector3f(0, 1, 0), 0);
+    Plane p6(Vector3f(1, 0, 0), 0);
+    IntersectData r3{collision(p5, p6)};
+    EXPECT_TRUE(r3.m_doesIntersect);
+    EXPECT_NEAR(r3.distance, 0.0, 0.01f);
+
+    // 4. Angled planes — intersect
+    Plane p7(Vector3f(0, 1, 0), 0);
+    Plane p8(Vector3f(1, 1, 0), 0);
+    IntersectData r4{collision(p7, p8)};
+    EXPECT_TRUE(r4.m_doesIntersect);
+    EXPECT_NEAR(r4.distance, 0.0, 0.01f);
+
+    // 5. Non-unit parallel normals — tests normalization
+    Plane p9(Vector3f(0, 3, 0), 0);
+    Plane p10(Vector3f(0, 7, 0), 14);
+    // After normalization: (0,1,0) d=0 and (0,1,0) d=2
+    IntersectData r5{collision(p9, p10)};
+    EXPECT_FALSE(r5.m_doesIntersect);
+    EXPECT_NEAR(r5.distance, 2.0, 0.01f);
+
+    // 6. Parallel along diagonal
+    Plane p11(Vector3f(1, 1, 1), 0);
+    Plane p12(Vector3f(1, 1, 1), 3);
+    // After normalization: d1=0, d2=3/√3=√3≈1.73
+    IntersectData r6{collision(p11, p12)};
+    EXPECT_FALSE(r6.m_doesIntersect);
+    EXPECT_NEAR(r6.distance, 1.73, 0.01f);
+
+    // 7. Both orderings
+    IntersectData r7{collision(p2, p1)};
+    EXPECT_FALSE(r7.m_doesIntersect);
+    EXPECT_NEAR(r7.distance, 5.0, 0.01f);
+
+    IntersectData r8{collision(p6, p5)};
+    EXPECT_TRUE(r8.m_doesIntersect);
+    EXPECT_NEAR(r8.distance, 0.0, 0.01f);
+}
+
+TEST(PhysicsTest, Plane_vs_AABB) {
+    // 1. Box well above axis-aligned floor — miss
+    Plane floor(Vector3f(0, 1, 0), 0);
+    AABB box_above(Vector3f(0, 5, 0), Vector3f(2, 7, 2));
+    // center=(1,6,1), half=(1,1,1), r=1, dist=6
+    IntersectData r1{collision(floor, box_above)};
+    EXPECT_FALSE(r1.m_doesIntersect);
+    EXPECT_NEAR(r1.distance, 6.0, 0.01f);
+
+    // 2. Box straddling plane — center on plane
+    AABB box_straddle(Vector3f(-1, -1, -1), Vector3f(1, 1, 1));
+    // center=(0,0,0), r=1, dist=0
+    IntersectData r2{collision(floor, box_straddle)};
+    EXPECT_TRUE(r2.m_doesIntersect);
+    EXPECT_NEAR(r2.distance, 0.0, 0.01f);
+
+    // 3. Box tangent — bottom face just touches
+    AABB box_tangent(Vector3f(-1, 0, -1), Vector3f(1, 2, 1));
+    // center=(0,1,0), r=1, dist=1, 1<=1
+    IntersectData r3{collision(floor, box_tangent)};
+    EXPECT_TRUE(r3.m_doesIntersect);
+    EXPECT_NEAR(r3.distance, 1.0, 0.01f);
+
+    // 4. Near miss — bottom face just above
+    AABB box_near_miss(Vector3f(-1, 1.1, -1), Vector3f(1, 3.1, 1));
+    // center=(0,2.1,0), r=1, dist=2.1
+    IntersectData r4{collision(floor, box_near_miss)};
+    EXPECT_FALSE(r4.m_doesIntersect);
+    EXPECT_NEAR(r4.distance, 2.1, 0.01f);
+}
+
+// 5. Diagonal plane through origin,
 /*
 Type of Assertions
  EXPECT_EQ(a, b);      // a == b
