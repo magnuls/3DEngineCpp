@@ -6,6 +6,7 @@
 #include "../src/physics2/boundingSphere.h"
 #include "../src/physics2/collisionDispatch.h"
 #include "../src/physics2/intersectData.h"
+#include "../src/physics2/plane.h"
 
 using namespace Physics;
 
@@ -118,7 +119,80 @@ TEST(PhysicsTest, AABB_vs_BS) {
     EXPECT_TRUE(r10.m_doesIntersect);
     EXPECT_NEAR(r10.distance, 1.0, 0.01f);
 }
+TEST(PhysicsTest, Plane_Collision_Tests) {
+    // 1. Box well above axis-aligned floor, no intersection
+    Plane floor(Vector3f(0, 1, 0), 0);
+    AABB box_above(Vector3f(0, 5, 0), Vector3f(2, 7, 2));
+    // center=(1,6,1), half=(1,1,1), r=1, dist=6
+    IntersectData r1{collision(floor, box_above)};
+    EXPECT_FALSE(r1.m_doesIntersect);
+    EXPECT_NEAR(r1.distance, 6.0, 0.01f);
 
+    // 2. Box straddling plane, center on plane
+    AABB box_straddle(Vector3f(-1, -1, -1), Vector3f(1, 1, 1));
+    // center=(0,0,0), r=1, dist=0
+    IntersectData r2{collision(floor, box_straddle)};
+    EXPECT_TRUE(r2.m_doesIntersect);
+    EXPECT_NEAR(r2.distance, 0.0, 0.01f);
+
+    // 3. Box tangent — bottom face just touches plane
+    AABB box_tangent(Vector3f(-1, 0, -1), Vector3f(1, 2, 1));
+    // center=(0,1,0), r=1, dist=1, 1<=1
+    IntersectData r3{collision(floor, box_tangent)};
+    EXPECT_TRUE(r3.m_doesIntersect);
+    EXPECT_NEAR(r3.distance, 1.0, 0.01f);
+
+    // 4. Near miss — bottom face just above plane
+    AABB box_near_miss(Vector3f(-1, 0.1, -1), Vector3f(1, 2.1, 1));
+    // center=(0,1.1,0), r=1, dist=1.1, 1.1>1
+    IntersectData r4{collision(floor, box_near_miss)};
+    EXPECT_FALSE(r4.m_doesIntersect);
+    EXPECT_NEAR(r4.distance, 1.1, 0.01f);
+
+    // 5. Diagonal plane through origin, box at origin
+    Plane diag(Vector3f(1, 1, 1), 0);
+    // normalized norm = (1/√3, 1/√3, 1/√3)
+    // r = 3/√3 = √3 ≈ 1.73, dist = 0
+    IntersectData r5{collision(diag, box_straddle)};
+    EXPECT_TRUE(r5.m_doesIntersect);
+    EXPECT_NEAR(r5.distance, 0.0, 0.01f);
+
+    // 6. Diagonal plane, box far away
+    AABB box_far(Vector3f(5, 5, 5), Vector3f(7, 7, 7));
+    // center=(6,6,6), r=√3≈1.73, dist=6√3≈10.39
+    IntersectData r6{collision(diag, box_far)};
+    EXPECT_FALSE(r6.m_doesIntersect);
+    EXPECT_NEAR(r6.distance, 10.39, 0.01f);
+
+    // 7. Flipped normal — same plane, same result
+    Plane floor_flipped(Vector3f(0, -1, 0), 0);
+    IntersectData r7{collision(floor_flipped, box_straddle)};
+    EXPECT_TRUE(r7.m_doesIntersect);
+    EXPECT_NEAR(r7.distance, 0.0, 0.01f);
+
+    // 8. Box below an elevated plane
+    Plane elevated(Vector3f(0, 1, 0), 10);
+    AABB box_below(Vector3f(0, 0, 0), Vector3f(2, 2, 2));
+    // center=(1,1,1), r=1, dist=|1-10|=9
+    IntersectData r8{collision(elevated, box_below)};
+    EXPECT_FALSE(r8.m_doesIntersect);
+    EXPECT_NEAR(r8.distance, 9.0, 0.01f);
+
+    // 9. Non-unit normal — tests normalization
+    Plane scaled_floor(Vector3f(0, 3, 0), 0);
+    IntersectData r9{collision(scaled_floor, box_tangent)};
+    EXPECT_TRUE(r9.m_doesIntersect);
+    EXPECT_NEAR(r9.distance, 1.0, 0.01f);
+
+    // 10. Both orderings
+    IntersectData r10{collision(box_straddle, floor)};
+    EXPECT_TRUE(r10.m_doesIntersect);
+    EXPECT_NEAR(r10.distance, 0.0, 0.01f);
+
+    IntersectData r11{collision(box_far, diag)};
+    EXPECT_FALSE(r11.m_doesIntersect);
+    EXPECT_NEAR(r11.distance, 10.39, 0.01f);
+}
 /*
 Type of Assertions
  EXPECT_EQ(a, b);      // a == b
