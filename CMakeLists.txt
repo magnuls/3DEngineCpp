@@ -1,102 +1,87 @@
-# Copyright (C) 2014 Barry Deeney
-# Copyright (C) 2014 Benny Bobaganoosh
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-################
-# CMAKE RULES! #
-################
-# Huge thanks to mxaddict for setting up the CMake build system!
-
-# we need features that are 2.6 >= dependent
-cmake_minimum_required(VERSION 3.5)
-
-# lets name the project
+cmake_minimum_required(VERSION 3.23)
 project(3DEngineCpp)
 
-# export compile_commands.json for clangd/editor tooling (git-ignored, local only)
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-#could not find glew
-list(APPEND CMAKE_PREFIX_PATH /opt/homebrew/)
-# use c++ 20
+# using cpp 20
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-# compiler flags
+
+#compiler flags
 add_compile_options(-Wall -Wextra)
 
-if ( CMAKE_BUILD_TYPE STREQUAL "" )
-	# CMake defaults to leaving CMAKE_BUILD_TYPE empty. This screws up
-	# differentiation between debug and release builds.
-	set(
-		CMAKE_BUILD_TYPE
-			"Debug"
-		CACHE STRING
-			"Choose the type of build, options are: None (CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) \"Debug\" \"Release\" \"RelWithDebInfo\" \"MinSizeRel\"."
-		FORCE
-	)
-endif ( CMAKE_BUILD_TYPE STREQUAL "" )
+#getting the source files
+file(GLOB_RECURSE SOURCES 
+	src/*.cpp
+	src/*.c)
 
-if ( CMAKE_BUILD_TYPE STREQUAL "Release" )
-add_definitions( -O2 )
-endif ( CMAKE_BUILD_TYPE STREQUAL "Release" )
+#Remove the main function
+list(REMOVE_ITEM SOURCES ${3DEngineCpp_SOURCE_DIR}/src/main.cpp)
 
-# Lets LOAD app our headers!
-file(GLOB_RECURSE HDRS ${3DEngineCpp_SOURCE_DIR}/src/*.h)
+#Create a library
+add_library(engine STATIC ${SOURCES})
 
-# Lets LOAD app our sources!
-file(GLOB_RECURSE SRCS
-	${3DEngineCpp_SOURCE_DIR}/src/*.cpp
-	${3DEngineCpp_SOURCE_DIR}/src/*.c
-)
+#Setting variable to the cmake directory
+set(3DEngineCpp_CMAKE_DIR ${3DEngineCpp_SOURCE_DIR}/cmake)
 
-# Define the executable
-add_executable(3DEngineCpp ${HDRS} ${SRCS})
-
-# We need a CMAKE_DIR with some code to find external dependencies
-SET(3DEngineCpp_CMAKE_DIR "${3DEngineCpp_SOURCE_DIR}/cmake")
-
-#######################################
-# LOOK for the packages that we need! #
-#######################################
-
-# OpenGL
+# adding dependencies
 find_package(OpenGL REQUIRED)
-
-# GLEW
 INCLUDE(${3DEngineCpp_CMAKE_DIR}/FindGLEW.cmake)
-
-# SDL2
 INCLUDE(${3DEngineCpp_CMAKE_DIR}/FindSDL2.cmake)
-
-# ASSIMP
 INCLUDE(${3DEngineCpp_CMAKE_DIR}/FindASSIMP.cmake)
 
-# Define the include DIRs
-include_directories(
-	${3DEngineCpp_SOURCE_DIR}/headers
-	${3DEngineCpp_SOURCE_DIR}/sources
-	${OPENGL_INCLUDE_DIRS}
-	${GLEW_INCLUDE_DIRS}
-	${SDL2_INCLUDE_DIRS}
-	${ASSIMP_INCLUDE_DIRS}
+
+# showing the headers to the compiler
+target_include_directories(engine PRIVATE
+    ${3DEngineCpp_SOURCE_DIR}/src    # your own headers
+    ${OPENGL_INCLUDE_DIRS}           # where GL/gl.h lives
+    ${GLEW_INCLUDE_DIRS}             # where GL/glew.h lives
+    ${SDL2_INCLUDE_DIRS}             # where SDL2/SDL.h lives
+    ${ASSIMP_INCLUDE_DIRS}           # where assimp headers live
 )
 
-# Define the link libraries
-target_link_libraries( 3DEngineCpp
+# showing linker where to link to 
+target_link_libraries(engine PRIVATE
 	${OPENGL_LIBRARIES}
 	${GLEW_LIBRARIES}
 	${SDL2_LIBRARIES}
 	${ASSIMP_LIBRARIES}
+
 )
+
+#created the executable file and linked it to our engine library 
+add_executable(3DEngineCpp ${CMAKE_SOURCE_DIR}/src/main.cpp)
+target_link_libraries(3DEngineCpp engine)
+
+#Make sure you have Gtest
+find_package(GTest REQUIRED)
+
+#find the test files
+file(GLOB_RECURSE TESTS
+	${CMAKE_SOURCE_DIR}/test/*.cpp
+)
+
+#allow testing
+enable_testing()
+
+# create executable
+add_executable(testing ${TESTS})
+
+# link lib + gtest to executable
+target_link_libraries(testing 
+	engine
+	GTest::gtest_main
+)
+
+include(GoogleTest)
+gtest_discover_tests(testing)
+
+
+
+
+
+
+
+
 

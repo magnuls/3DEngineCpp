@@ -9,5 +9,5 @@ class IntersectData {
     IntersectData(const bool doesIntersect, const float distance);
 
     bool getDoesIntersect() const;
-    bool getDistance() const;
+    float getDistance() const;
 };
