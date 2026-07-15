@@ -15,10 +15,10 @@ TEST(PhysicsTest, BoundingSphere) {
     IntersectData s3_s4{sphere3.intersectBoundingSphere(sphere4)};
     IntersectData s4_s1{sphere1.intersectBoundingSphere(sphere4)};
 
-    EXPECT_TRUE(s1_s2.getDoesIntersect());
-    EXPECT_TRUE(s2_s1.getDoesIntersect());
-    EXPECT_FALSE(s3_s4.getDoesIntersect());
-    EXPECT_TRUE(s4_s1.getDoesIntersect());
+    EXPECT_TRUE(s1_s2.m_doesIntersect);
+    EXPECT_TRUE(s2_s1.m_doesIntersect);
+    EXPECT_FALSE(s3_s4.m_doesIntersect);
+    EXPECT_TRUE(s4_s1.m_doesIntersect);
 }
 
 /*
