@@ -2,6 +2,7 @@
 
 #include "boundingSphere.h"
 #include "intersectData.h"
+
 using namespace Physics;
 
 template <>
