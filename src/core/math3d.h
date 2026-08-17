@@ -150,6 +150,17 @@ class Vector {
         return !operator==(r);
     }
 
+    // Added an iterator
+    int* begin() { return values; }
+    int* end() { return values + D; }
+
+    const int* begin() const { return values; }
+    const int* end() const { return values + D; }
+
+    // Added const iterator for non const objects
+    const int* cbegin() const { return values; }
+    const int* cend() const { return values + D; }
+
    protected:
    private:
     T values[D];
