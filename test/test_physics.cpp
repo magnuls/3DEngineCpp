@@ -1,5 +1,8 @@
 #include <gtest/gtest.h>
 
+#include <iomanip>
+
+#include "../src/physics2/AABB.h"
 #include "../src/physics2/boundingSphere.h"
 #include "../src/physics2/collisionDispatch.h"
 #include "../src/physics2/intersectData.h"
@@ -22,6 +25,38 @@ TEST(PhysicsTest, BoundingSphere) {
     EXPECT_TRUE(s2_s1.m_doesIntersect);
     EXPECT_FALSE(s3_s4.m_doesIntersect);
     EXPECT_TRUE(s4_s1.m_doesIntersect);
+}
+
+int nthdigit(float& digit, const int n) {
+    return std::trunc(std::pow(10, n) * digit);
+}
+
+TEST(PhysicsTest, AxisAlignedBoundingBox) {
+    AABB box0(Vector3f(0, 0, 0), Vector3f(1, 1, 1));
+    // This test below will throw a runtime error since second vector has an
+    // attribute < first
+    //  AABB box1(Vector3f(4, 4, 4), Vector3f(5, 8, 0));
+    AABB box2(Vector3f(4, 2, 3), Vector3f(7, 6, 5));
+    AABB box3(Vector3f(-399, -493, 233), Vector3f(9, -9, 300));
+    AABB box4(Vector3f(0, 0, 0), Vector3f(5, 5, 5));
+    AABB box5(Vector3f(3, 2, 4), Vector3f(8, 7, 9));
+    AABB box6(Vector3f(10, 10, 10), Vector3f(15, 15, 15));
+    AABB box7(Vector3f(0, 0, 0), Vector3f(3, 3, 3));
+
+    // IntersectData b0_b1{collision(box0, box1)};
+    IntersectData b0_b2{collision(box0, box2)};
+    IntersectData b2_b3{collision(box2, box3)};
+    IntersectData b3_b0{collision(box3, box0)};
+    IntersectData b4_b5{collision(box4, box5)};
+    IntersectData b6_b7{collision(box6, box7)};
+
+    EXPECT_FALSE(b6_b7.m_doesIntersect);
+    EXPECT_NEAR(b6_b7.distance, 12.12, 0.01f);
+    EXPECT_FALSE(b0_b2.m_doesIntersect);
+    EXPECT_FALSE(b2_b3.m_doesIntersect);
+    EXPECT_TRUE(b4_b5.m_doesIntersect);
+    EXPECT_NEAR(b0_b2.distance, 3.74, 0.01f);
+    EXPECT_NEAR(b2_b3.distance, 228.31, 0.01f);
 }
 
 /*
