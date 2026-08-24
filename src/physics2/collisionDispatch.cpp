@@ -2,6 +2,7 @@
 
 #include <ranges>
 
+#include "../src/core/math3d.h"
 #include "AABB.h"
 #include "boundingSphere.h"
 #include "intersectData.h"
@@ -33,4 +34,26 @@ IntersectData Physics::collision<AABB, AABB>(const AABB& A, const AABB& B) {
         return IntersectData(true, max.Length());
     }
     return IntersectData(false, max.Length());
+}
+
+template <>
+IntersectData Physics::collision<AABB, BoundingSphere>(
+    const AABB& A, const BoundingSphere& B) {
+    Vector3f closest(
+        std::clamp(B.getCenter().GetX(), A.getMin().GetX(), A.getMax().GetX()),
+        std::clamp(B.getCenter().GetY(), A.getMin().GetY(), A.getMax().GetY()),
+        std::clamp(B.getCenter().GetZ(), A.getMin().GetZ(), A.getMax().GetZ()));
+
+    Vector3f diff{closest - B.getCenter()};
+    float length{diff.Length()};
+    // Condition for intersection
+    IntersectData inter(length <= B.getRadius(), length);
+
+    return inter;
+}
+
+template <>
+IntersectData Physics::collision<BoundingSphere, AABB>(const BoundingSphere& B,
+                                                       const AABB& A) {
+    return Physics::collision(A, B);
 }
